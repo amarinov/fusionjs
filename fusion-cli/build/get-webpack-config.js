@@ -137,6 +137,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
   const runtime = COMPILATIONS[id];
   const env = dev ? 'development' : 'production';
   const shouldMinify = !dev && minify;
+  const jsExtPattern = fusionConfig.jsExtPattern || JS_EXT_PATTERN;
 
   // Both options default to true, but if `--zopfli=false`
   // it should be respected for backwards compatibility
@@ -174,7 +175,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
   const {experimentalBundleTest, experimentalTransformTest} = fusionConfig;
   const babelTester = experimentalTransformTest
     ? modulePath => {
-        if (!JS_EXT_PATTERN.test(modulePath)) {
+        if (!jsExtPattern.test(modulePath)) {
           return false;
         }
         const transform = experimentalTransformTest(
@@ -191,7 +192,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
           );
         }
       }
-    : JS_EXT_PATTERN;
+    : jsExtPattern;
 
   return {
     name: runtime,
@@ -286,6 +287,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
             {
               loader: babelLoader.path,
               options: {
+                dir,
                 configCacheKey: 'server-config',
                 overrideCacheKey: 'server-override',
                 babelConfigData: {...babelConfigData},
@@ -312,6 +314,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
             {
               loader: babelLoader.path,
               options: {
+                dir,
                 configCacheKey: 'client-config',
                 overrideCacheKey: 'client-override',
                 babelConfigData: {...babelConfigData},
@@ -338,6 +341,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
             {
               loader: babelLoader.path,
               options: {
+                dir,
                 configCacheKey: 'legacy-config',
                 overrideCacheKey: 'legacy-override',
                 babelConfigData: {
@@ -433,6 +437,7 @@ function getWebpackConfig(opts /*: WebpackConfigOpts */) {
         __FUSION_ENTRY_PATH__: path.join(dir, main),
         __ENV__: env,
       },
+      extensions: fusionConfig.resolveExtensions,
     },
     resolveLoader: {
       alias: {
